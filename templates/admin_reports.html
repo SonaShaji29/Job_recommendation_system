@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Analytics & Reports{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-0">System Reports</h4>
+    <p class="text-muted">Analytics overview of the job portal.</p>
+</div>
+
+<div class="row g-4">
+    <!-- Application Status Distribution -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h6 class="fw-bold mb-0"><i class="fas fa-chart-pie me-2 text-primary"></i>Applications by Status</h6></div>
+            <div class="card-body">
+                {% set total_apps = app_stats|sum(attribute='count') %}
+                {% for stat in app_stats %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small fw-500">{{ stat.application_status }}</span>
+                        <span class="small text-muted">{{ stat.count }} ({{ (stat.count / total_apps * 100)|int if total_apps else 0 }}%)</span>
+                    </div>
+                    <div class="progress" style="height:8px;border-radius:10px;">
+                        <div class="progress-bar" role="progressbar"
+                            style="width:{{ (stat.count / total_apps * 100)|int if total_apps else 0 }}%;background:
+                            {{ '#4f46e5' if stat.application_status=='Applied' else '#10b981' if stat.application_status=='Shortlisted' else '#f59e0b' if stat.application_status=='Reviewed' else '#ef4444' if stat.application_status=='Rejected' else '#06b6d4' }};">
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No data yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Jobs by Category -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h6 class="fw-bold mb-0"><i class="fas fa-tags me-2 text-success"></i>Jobs by Category</h6></div>
+            <div class="card-body">
+                {% set max_cat = job_cats[0].count if job_cats else 1 %}
+                {% for cat in job_cats %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small fw-500">{{ cat.category or 'Uncategorized' }}</span>
+                        <span class="small text-muted">{{ cat.count }}</span>
+                    </div>
+                    <div class="progress" style="height:8px;border-radius:10px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                            style="width:{{ (cat.count / max_cat * 100)|int }}%;">
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No data yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Recruiters -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h6 class="fw-bold mb-0"><i class="fas fa-trophy me-2 text-warning"></i>Top Recruiters</h6></div>
+            <div class="table-responsive">
+                <table class="table mb-0 small">
+                    <thead><tr><th>Recruiter</th><th>Jobs Posted</th><th>Total Applicants</th></tr></thead>
+                    <tbody>
+                    {% for rec in top_recruiters %}
+                    <tr>
+                        <td class="fw-500">{{ rec.full_name }}</td>
+                        <td>{{ rec.job_count }}</td>
+                        <td>{{ rec.total_apps or 0 }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="text-center text-muted">No recruiters yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Registrations -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h6 class="fw-bold mb-0"><i class="fas fa-chart-bar me-2 text-info"></i>Monthly User Registrations</h6></div>
+            <div class="card-body">
+                {% set max_month = monthly[0].count if monthly else 1 %}
+                {% for m in monthly %}
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="text-muted small" style="width:70px;">{{ m.month }}</div>
+                    <div class="flex-grow-1">
+                        <div class="progress" style="height:16px;border-radius:6px;">
+                            <div class="progress-bar" role="progressbar"
+                                style="width:{{ (m.count / max_month * 100)|int }}%;background:linear-gradient(90deg,#4f46e5,#06b6d4);">
+                                <span class="small">{{ m.count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No registration data yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

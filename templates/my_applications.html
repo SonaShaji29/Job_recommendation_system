@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}My Applications{% endblock %}
+{% block page_title %}My Applications{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-0">My Applications</h4>
+    <p class="text-muted">Track all your job applications in one place.</p>
+</div>
+
+{% if applications %}
+<div class="row g-3">
+    {% for app in applications %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-start gap-2 mb-3">
+                    <div class="company-logo" style="width:44px;height:44px;font-size:1rem;flex-shrink:0;">{{ app.company_name[0] }}</div>
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ app.job_title }}</h6>
+                        <div class="text-muted small">{{ app.company_name }}</div>
+                    </div>
+                </div>
+                <div class="mb-2 small text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ app.location or 'Remote' }} · {{ app.job_type }}</div>
+                <div class="mb-2">
+                    <span class="badge 
+                        {% if app.application_status == 'Applied' %}status-applied
+                        {% elif app.application_status == 'Reviewed' %}status-reviewed
+                        {% elif app.application_status == 'Shortlisted' %}status-shortlisted
+                        {% elif app.application_status == 'Rejected' %}status-rejected
+                        {% else %}bg-secondary{% endif %}">
+                        {{ app.application_status }}
+                    </span>
+                    {% if app.job_status == 'Closed' %}
+                    <span class="badge status-closed ms-1">Job Closed</span>
+                    {% endif %}
+                </div>
+                <div class="text-muted small mb-3"><i class="fas fa-calendar me-1"></i>Applied: {{ app.applied_date[:10] }}</div>
+                {% if app.cover_letter %}
+                <div class="small text-muted border-top pt-2">
+                    <i class="fas fa-file-alt me-1"></i>Cover letter submitted
+                </div>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="{{ url_for('job_detail', job_id=app.job_id) }}" class="btn btn-sm btn-outline-primary w-100">View Job</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+    <h5 class="text-muted">No applications yet</h5>
+    <p class="text-muted">Start applying to jobs and track your progress here.</p>
+    <a href="{{ url_for('jobs') }}" class="btn btn-primary">Browse Jobs</a>
+</div>
+{% endif %}
+{% endblock %}

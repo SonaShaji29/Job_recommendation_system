@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Browse Jobs{% endblock %}
+{% block page_title %}Browse Jobs{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-0">Find Your Dream Job</h4>
+    <p class="text-muted">{{ total }} jobs found</p>
+</div>
+
+<!-- Search & Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('jobs') }}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Job title, company, keyword..." value="{{ search }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="skill" class="form-control" placeholder="Skills (e.g. Python, React)" value="{{ skill }}">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="location" class="form-control" placeholder="Location" value="{{ location }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="job_type" class="form-select">
+                        <option value="">All Types</option>
+                        {% for t in ['Full-time','Part-time','Remote','Internship','Contract','Freelance'] %}
+                        <option value="{{ t }}" {{ 'selected' if job_type==t }}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            <div class="row g-2 mt-1">
+                <div class="col-auto">
+                    <select name="category" class="form-select form-select-sm">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {{ 'selected' if category==cat }}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <select name="experience" class="form-select form-select-sm">
+                        <option value="">Experience Level</option>
+                        <option value="0" {{ 'selected' if exp=='0' }}>Fresher (0 yrs)</option>
+                        <option value="2" {{ 'selected' if exp=='2' }}>0-2 years</option>
+                        <option value="5" {{ 'selected' if exp=='5' }}>0-5 years</option>
+                        <option value="10" {{ 'selected' if exp=='10' }}>0-10 years</option>
+                    </select>
+                </div>
+                {% if search or skill or location or job_type or category or exp %}
+                <div class="col-auto">
+                    <a href="{{ url_for('jobs') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-times me-1"></i>Clear Filters</a>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Job Grid -->
+{% if jobs %}
+<div class="row g-3 mb-4">
+    {% for job in jobs %}
+    <div class="col-md-6 col-lg-4">
+        <div class="job-card">
+            <div class="d-flex align-items-start gap-3 mb-3">
+                <div class="company-logo">{{ job.company_name[0] }}</div>
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-0" style="font-size:.9rem;">{{ job.job_title }}</h6>
+                    <div class="text-muted small">{{ job.company_name }}</div>
+                </div>
+                {% if job.job_id in applied_ids %}
+                <span class="badge status-applied">Applied</span>
+                {% endif %}
+            </div>
+
+            <div class="mb-2">
+                <span class="text-muted small me-2"><i class="fas fa-map-marker-alt me-1"></i>{{ job.location or 'Remote' }}</span>
+                <span class="text-muted small me-2"><i class="fas fa-clock me-1"></i>{{ job.job_type }}</span>
+                {% if job.salary_range %}<span class="text-muted small"><i class="fas fa-rupee-sign me-1"></i>{{ job.salary_range }}</span>{% endif %}
+            </div>
+
+            {% if job.due_date %}
+            <div class="mb-2 small text-danger"><i class="fas fa-calendar-alt me-1"></i>Due: {{ job.due_date }}</div>
+            {% endif %}
+
+            <div class="mb-3">
+                {% for skill in job.required_skills.split(',')[:4] %}
+                <span class="skill-badge">{{ skill.strip() }}</span>
+                {% endfor %}
+                {% if job.required_skills.split(',')|length > 4 %}
+                <span class="skill-badge">+{{ job.required_skills.split(',')|length - 4 }} more</span>
+                {% endif %}
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('job_detail', job_id=job.job_id) }}" class="btn btn-sm btn-outline-primary flex-grow-1">View Details</a>
+                {% if session.role == 'user' %}
+                    {% if job.job_id in applied_ids %}
+                    <button class="btn btn-sm btn-success flex-grow-1" disabled><i class="fas fa-check me-1"></i>Applied</button>
+                    {% else %}
+                    <a href="{{ url_for('apply_job', job_id=job.job_id) }}" class="btn btn-sm btn-primary flex-grow-1">Apply Now</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<nav>
+    <ul class="pagination justify-content-center">
+        {% if page > 1 %}
+        <li class="page-item"><a class="page-link" href="?page={{ page-1 }}&search={{ search }}&skill={{ skill }}&location={{ location }}&job_type={{ job_type }}">Previous</a></li>
+        {% endif %}
+        {% for p in range(1, total_pages+1) %}
+        <li class="page-item {{ 'active' if p==page }}"><a class="page-link" href="?page={{ p }}&search={{ search }}&skill={{ skill }}&location={{ location }}&job_type={{ job_type }}">{{ p }}</a></li>
+        {% endfor %}
+        {% if page < total_pages %}
+        <li class="page-item"><a class="page-link" href="?page={{ page+1 }}&search={{ search }}&skill={{ skill }}&location={{ location }}&job_type={{ job_type }}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-search fa-4x text-muted mb-3"></i>
+    <h5 class="text-muted">No jobs found</h5>
+    <p class="text-muted">Try adjusting your search filters.</p>
+    <a href="{{ url_for('jobs') }}" class="btn btn-primary">Clear Filters</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Job{% endblock %}
+{% block page_title %}{{ action }} Job{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('recruiter_jobs') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back to Jobs</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="fw-bold mb-0"><i class="fas fa-{{ 'plus' if action=='New' else 'edit' }} me-2 text-primary"></i>{{ action }} Job Listing</h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Job Title <span class="text-danger">*</span></label>
+                            <input type="text" name="job_title" class="form-control" value="{{ job.job_title if job else '' }}" placeholder="e.g. Senior Python Developer" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Company Name <span class="text-danger">*</span></label>
+                            <input type="text" name="company_name" class="form-control" value="{{ job.company_name if job else '' }}" placeholder="e.g. Tech Corp Pvt Ltd" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Location</label>
+                            <input type="text" name="location" class="form-control" value="{{ job.location if job else '' }}" placeholder="e.g. Bangalore, India">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Job Type</label>
+                            <select name="job_type" class="form-select">
+                                {% for t in ['Full-time','Part-time','Remote','Internship','Contract','Freelance'] %}
+                                <option value="{{ t }}" {{ 'selected' if job and job.job_type==t }}>{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Category</label>
+                            <input type="text" name="category" class="form-control" value="{{ job.category if job else '' }}" placeholder="e.g. IT, Finance, Marketing">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Salary Range</label>
+                            <input type="text" name="salary_range" class="form-control" value="{{ job.salary_range if job else '' }}" placeholder="e.g. ₹5L - ₹10L/year">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Experience Required (years)</label>
+                            <input type="number" name="experience_required" class="form-control" value="{{ job.experience_required if job else 0 }}" min="0" max="30">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Application Deadline</label>
+                            <input type="date" name="due_date" class="form-control" value="{{ job.due_date if job and job.due_date else '' }}">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Required Skills <span class="text-danger">*</span></label>
+                            <input type="text" name="required_skills" class="form-control" value="{{ job.required_skills if job else '' }}" placeholder="Python, Django, PostgreSQL, REST API, Docker" required>
+                            <div class="form-text">Separate skills with commas. This is used for matching candidates.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Job Description <span class="text-danger">*</span></label>
+                            <textarea name="job_description" class="form-control" rows="7" placeholder="Describe the role, responsibilities, and requirements..." required>{{ job.job_description if job else '' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="Active" {{ 'selected' if not job or job.status=='Active' }}>Active</option>
+                                <option value="Closed" {{ 'selected' if job and job.status=='Closed' }}>Closed</option>
+                                <option value="Draft" {{ 'selected' if job and job.status=='Draft' }}>Draft</option>
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex gap-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>{{ 'Post Job' if action=='New' else 'Update Job' }}
+                            </button>
+                            <a href="{{ url_for('recruiter_jobs') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

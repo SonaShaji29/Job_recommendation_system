@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Applications - {{ job.job_title }}{% endblock %}
+{% block page_title %}Job Applications{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('recruiter_jobs') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back to Jobs</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="company-logo" style="width:48px;height:48px;">{{ job.company_name[0] }}</div>
+            <div>
+                <h5 class="fw-bold mb-0">{{ job.job_title }}</h5>
+                <div class="text-muted small">{{ job.company_name }} · {{ job.location or 'Remote' }} · {{ applications|length }} applicant(s)</div>
+            </div>
+            <span class="badge status-{{ job.status.lower() }} ms-auto">{{ job.status }}</span>
+        </div>
+    </div>
+</div>
+
+{% if applications %}
+<div class="row g-3">
+    {% for app in applications %}
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#4f46e5,#06b6d4);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1.1rem;flex-shrink:0;">{{ app.full_name[0] }}</div>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-0">{{ app.full_name }}</h6>
+                        <div class="text-muted small">{{ app.email }}</div>
+                        {% if app.phone %}<div class="text-muted small"><i class="fas fa-phone me-1"></i>{{ app.phone }}</div>{% endif %}
+                    </div>
+                    <span class="badge 
+                        {% if app.application_status == 'Applied' %}status-applied
+                        {% elif app.application_status == 'Reviewed' %}status-reviewed
+                        {% elif app.application_status == 'Shortlisted' %}status-shortlisted
+                        {% elif app.application_status == 'Rejected' %}status-rejected
+                        {% else %}bg-secondary{% endif %}">
+                        {{ app.application_status }}
+                    </span>
+                </div>
+
+                {% if app.skills %}
+                <div class="mb-2">
+                    <div class="text-muted" style="font-size:.72rem;font-weight:600;text-transform:uppercase;margin-bottom:.3rem;">Skills</div>
+                    {% set match = namespace(count=0, total=0) %}
+                    {% for skill in app.skills.split(',')[:5] %}
+                    <span class="skill-badge">{{ skill.strip() }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="row g-2 mb-2 small text-muted">
+                    {% if app.experience_years is not none %}
+                    <div class="col-6"><i class="fas fa-user-tie me-1"></i>{{ app.experience_years }} yrs exp</div>
+                    {% endif %}
+                    {% if app.education %}
+                    <div class="col-6"><i class="fas fa-graduation-cap me-1"></i>{{ app.education }}</div>
+                    {% endif %}
+                    {% if app.preferred_role %}
+                    <div class="col-12"><i class="fas fa-bullseye me-1"></i>Wants: {{ app.preferred_role }}</div>
+                    {% endif %}
+                </div>
+
+                {% if app.cover_letter %}
+                <div class="small text-muted mb-2 p-2 rounded" style="background:#f8fafc;font-style:italic;">
+                    "{{ app.cover_letter[:150] }}{% if app.cover_letter|length > 150 %}...{% endif %}"
+                </div>
+                {% endif %}
+
+                <div class="text-muted small mb-3"><i class="fas fa-calendar me-1"></i>Applied: {{ app.applied_date[:10] }}</div>
+
+                <div class="d-flex gap-2 align-items-center">
+                    {% if app.resume_path %}
+                    <a href="{{ url_for('static', filename='resumes/' + app.resume_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-file-pdf me-1"></i>Resume
+                    </a>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('update_application_status', app_id=app.application_id) }}" class="d-flex gap-1 flex-grow-1">
+                        <select name="status" class="form-select form-select-sm">
+                            {% for s in ['Applied', 'Reviewed', 'Shortlisted', 'Interview', 'Offered', 'Rejected'] %}
+                            <option value="{{ s }}" {{ 'selected' if app.application_status==s }}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+    <h5 class="text-muted">No applications yet</h5>
+    <p class="text-muted">Share your job listing to attract candidates.</p>
+</div>
+{% endif %}
+{% endblock %}

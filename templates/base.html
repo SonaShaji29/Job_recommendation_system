@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}JobConnect{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --sidebar-width: 260px;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; color: #334155; }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0; left: 0;
+            background: linear-gradient(160deg, var(--dark) 0%, #1e293b 100%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transition: transform .3s ease;
+        }
+        .sidebar-brand {
+            padding: 1.5rem;
+            display: flex; align-items: center; gap: .75rem;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+        .sidebar-brand .logo-icon {
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: white;
+        }
+        .sidebar-brand .brand-name { color: white; font-weight: 700; font-size: 1.1rem; }
+        .sidebar-brand .brand-tagline { color: rgba(255,255,255,.5); font-size: .7rem; }
+        .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+        .nav-section-label {
+            color: rgba(255,255,255,.3);
+            font-size: .65rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .1em;
+            padding: .5rem 1.5rem;
+        }
+        .sidebar-nav a {
+            display: flex; align-items: center; gap: .75rem;
+            padding: .65rem 1.5rem;
+            color: rgba(255,255,255,.65);
+            text-decoration: none;
+            font-size: .875rem;
+            border-left: 3px solid transparent;
+            transition: all .2s;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            color: white;
+            background: rgba(255,255,255,.07);
+            border-left-color: var(--primary);
+        }
+        .sidebar-nav a i { width: 18px; text-align: center; }
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255,255,255,.08);
+        }
+        .user-info {
+            display: flex; align-items: center; gap: .75rem;
+            margin-bottom: .75rem;
+        }
+        .user-avatar {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: .9rem;
+            flex-shrink: 0;
+        }
+        .user-name { color: white; font-size: .85rem; font-weight: 600; }
+        .user-role {
+            background: rgba(255,255,255,.15);
+            color: rgba(255,255,255,.8);
+            font-size: .65rem; padding: .15rem .5rem; border-radius: 20px;
+            text-transform: capitalize;
+        }
+
+        /* Main layout */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        .topbar {
+            background: white;
+            padding: .75rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 50;
+        }
+        .topbar-title { font-weight: 600; font-size: 1.1rem; color: var(--dark); }
+        .content-area { padding: 2rem; flex: 1; }
+
+        /* Cards */
+        .card { border: none; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .card-header { background: white; border-bottom: 1px solid #f1f5f9; border-radius: 16px 16px 0 0 !important; padding: 1.25rem 1.5rem; }
+
+        /* Stats cards */
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex; align-items: center; gap: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+        }
+        .stat-icon {
+            width: 56px; height: 56px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .stat-value { font-size: 2rem; font-weight: 700; color: var(--dark); line-height: 1; }
+        .stat-label { color: #64748b; font-size: .8rem; margin-top: .25rem; }
+
+        /* Job cards */
+        .job-card {
+            background: white;
+            border-radius: 14px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,.07);
+            border: 1px solid transparent;
+            transition: all .2s;
+            height: 100%;
+        }
+        .job-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(79,70,229,.12); }
+        .company-logo {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .skill-badge {
+            background: #ede9fe; color: var(--primary-dark);
+            font-size: .7rem; padding: .2rem .6rem; border-radius: 20px;
+            display: inline-block; margin: .15rem;
+        }
+        .match-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white; font-size: .75rem; padding: .25rem .75rem;
+            border-radius: 20px; font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn-primary { background: var(--primary); border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+        .btn-outline-primary { color: var(--primary); border-color: var(--primary); }
+        .btn-outline-primary:hover { background: var(--primary); border-color: var(--primary); }
+
+        /* Badges */
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-closed { background: #fee2e2; color: #991b1b; }
+        .status-applied { background: #dbeafe; color: #1e40af; }
+        .status-reviewed { background: #fef3c7; color: #92400e; }
+        .status-shortlisted { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+
+        /* Forms */
+        .form-control, .form-select {
+            border: 1.5px solid #e2e8f0; border-radius: 10px;
+            padding: .6rem 1rem; font-size: .875rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+        }
+        .form-label { font-weight: 500; font-size: .85rem; color: #475569; margin-bottom: .35rem; }
+
+        /* Table */
+        .table { font-size: .875rem; }
+        .table thead th { background: #f8fafc; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; }
+
+        /* Alerts */
+        .alert { border: none; border-radius: 12px; font-size: .875rem; }
+
+        /* Mobile */
+        .sidebar-toggle { display: none; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .sidebar-toggle { display: block; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% if session.user_id %}
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="logo-icon"><i class="fas fa-briefcase"></i></div>
+        <div>
+            <div class="brand-name">JobConnect</div>
+            <div class="brand-tagline">Smart Job Portal</div>
+        </div>
+    </div>
+    <div class="sidebar-nav">
+        {% if session.role == 'admin' %}
+        <div class="nav-section-label">Admin</div>
+        <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">
+            <i class="fas fa-chart-pie"></i> Dashboard
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="{{ 'active' if request.endpoint == 'admin_users' }}">
+            <i class="fas fa-users"></i> Manage Users
+        </a>
+        <a href="{{ url_for('recruiter_jobs') }}" class="{{ 'active' if request.endpoint == 'recruiter_jobs' }}">
+            <i class="fas fa-briefcase"></i> All Jobs
+        </a>
+        <a href="{{ url_for('admin_reports') }}" class="{{ 'active' if request.endpoint == 'admin_reports' }}">
+            <i class="fas fa-chart-bar"></i> Reports
+        </a>
+        <div class="nav-section-label">Browse</div>
+        <a href="{{ url_for('jobs') }}" class="{{ 'active' if request.endpoint == 'jobs' }}">
+            <i class="fas fa-search"></i> Browse Jobs
+        </a>
+
+        {% elif session.role == 'recruiter' %}
+        <div class="nav-section-label">Recruiter</div>
+        <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="{{ url_for('recruiter_jobs') }}" class="{{ 'active' if request.endpoint == 'recruiter_jobs' }}">
+            <i class="fas fa-briefcase"></i> My Jobs
+        </a>
+        <a href="{{ url_for('new_job') }}" class="{{ 'active' if request.endpoint == 'new_job' }}">
+            <i class="fas fa-plus-circle"></i> Post New Job
+        </a>
+
+        {% else %}
+        <div class="nav-section-label">Main</div>
+        <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="{{ url_for('jobs') }}" class="{{ 'active' if request.endpoint == 'jobs' }}">
+            <i class="fas fa-search"></i> Find Jobs
+        </a>
+        <a href="{{ url_for('my_applications') }}" class="{{ 'active' if request.endpoint == 'my_applications' }}">
+            <i class="fas fa-file-alt"></i> My Applications
+        </a>
+        {% endif %}
+
+        <div class="nav-section-label">Account</div>
+        <a href="{{ url_for('profile') }}" class="{{ 'active' if request.endpoint == 'profile' }}">
+            <i class="fas fa-user-circle"></i> Profile
+        </a>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ session.full_name[0].upper() }}</div>
+            <div>
+                <div class="user-name">{{ session.full_name }}</div>
+                <span class="user-role">{{ session.role }}</span>
+            </div>
+        </div>
+        <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger w-100">
+            <i class="fas fa-sign-out-alt me-1"></i>Logout
+        </a>
+    </div>
+</nav>
+
+<!-- Main -->
+<div class="main-content">
+    <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-sm sidebar-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="topbar-title">{% block page_title %}{% endblock %}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge rounded-pill" style="background:#ede9fe;color:var(--primary);">
+                <i class="fas fa-user me-1"></i>{{ session.full_name }}
+            </span>
+        </div>
+    </div>
+    <div class="content-area">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show mb-3">
+            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category in ['danger','warning'] else 'info-circle' }} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+{% else %}
+<div class="content-area">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show mb-3">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</div>
+{% endif %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

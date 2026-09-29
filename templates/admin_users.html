@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Manage Users{% endblock %}
+{% block page_title %}Manage Users{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-0">User Management</h4>
+    <p class="text-muted">{{ users|length }} total users</p>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Phone</th>
+                    <th>Role</th>
+                    <th>Jobs/Apps</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:38px;height:38px;background:linear-gradient(135deg,{{ '#4f46e5,#06b6d4' if user.role=='user' else '#10b981,#059669' if user.role=='recruiter' else '#ef4444,#b91c1c' }});border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:.9rem;flex-shrink:0;">{{ user.full_name[0] }}</div>
+                        <div>
+                            <div class="fw-600" style="font-size:.85rem;">{{ user.full_name }}</div>
+                            <div class="text-muted" style="font-size:.75rem;">{{ user.email }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-muted small">{{ user.phone or '-' }}</td>
+                <td>
+                    <span class="badge {{ 'bg-primary' if user.role=='user' else 'bg-success' if user.role=='recruiter' else 'bg-danger' }}">
+                        {{ user.role|capitalize }}
+                    </span>
+                </td>
+                <td class="small text-muted">
+                    {% if user.role == 'recruiter' %}{{ user.job_count }} jobs posted
+                    {% else %}{{ user.app_count }} applications{% endif %}
+                </td>
+                <td class="text-muted small">{{ user.created_at[:10] }}</td>
+                <td>
+                    {% if user.role != 'admin' %}
+                    <div class="d-flex gap-1">
+                        <form method="POST" action="{{ url_for('toggle_user', user_id=user.user_id) }}" class="d-flex gap-1">
+                            <select name="role" class="form-select form-select-sm" style="font-size:.7rem;">
+                                <option value="user" {{ 'selected' if user.role=='user' }}>User</option>
+                                <option value="recruiter" {{ 'selected' if user.role=='recruiter' }}>Recruiter</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-primary" style="font-size:.7rem;">Update</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('delete_user', user_id=user.user_id) }}" onsubmit="return confirm('Delete this user? This cannot be undone.')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size:.7rem;"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <span class="badge bg-danger">Super Admin</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

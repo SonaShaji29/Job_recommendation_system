@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Recruiter Dashboard{% endblock %}
+{% block page_title %}Recruiter Dashboard{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-0">Welcome, {{ session.full_name }} 👋</h4>
+    <p class="text-muted">Manage your job listings and review candidates.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#ede9fe;"><i class="fas fa-briefcase" style="color:#4f46e5;"></i></div>
+            <div><div class="stat-value">{{ stats.my_jobs }}</div><div class="stat-label">Total Jobs Posted</div></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#d1fae5;"><i class="fas fa-check-circle" style="color:#10b981;"></i></div>
+            <div><div class="stat-value">{{ stats.active_jobs }}</div><div class="stat-label">Active Jobs</div></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fef3c7;"><i class="fas fa-users" style="color:#f59e0b;"></i></div>
+            <div><div class="stat-value">{{ stats.total_applications }}</div><div class="stat-label">Total Applicants</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h6 class="fw-bold mb-0"><i class="fas fa-list me-2 text-primary"></i>My Recent Jobs</h6>
+        <a href="{{ url_for('new_job') }}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i>Post New Job</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead><tr><th>Job Title</th><th>Location</th><th>Due Date</th><th>Applicants</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for job in my_jobs %}
+            <tr>
+                <td><div class="fw-600">{{ job.job_title }}</div><div class="text-muted small">{{ job.company_name }}</div></td>
+                <td class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ job.location or 'Remote' }}</td>
+                <td>{% if job.due_date %}<span class="text-danger small"><i class="fas fa-calendar me-1"></i>{{ job.due_date }}</span>{% else %}<span class="text-muted small">No deadline</span>{% endif %}</td>
+                <td><span class="badge bg-light text-dark">{{ job.app_count }} applied</span></td>
+                <td><span class="badge status-{{ job.status.lower() }}">{{ job.status }}</span></td>
+                <td>
+                    <a href="{{ url_for('job_applications', job_id=job.job_id) }}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-users"></i></a>
+                    <a href="{{ url_for('edit_job', job_id=job.job_id) }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer text-center">
+        <a href="{{ url_for('recruiter_jobs') }}" class="btn btn-outline-primary">View All Jobs</a>
+    </div>
+</div>
+{% endblock %}
